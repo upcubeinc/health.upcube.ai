@@ -44,7 +44,7 @@ services:
       - server
     ports:
       - "8096:80"
-    # (healthcheck omitted to avoid needing nc/curl in the image)
 
 volumes:
   db:
+
