@@ -5,9 +5,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-sparky}
-      POSTGRES_USER: ${POSTGRES_USER:-sparkyuser}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set-in-coolify}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - db:/var/lib/postgresql/data
     healthcheck:
@@ -19,9 +19,11 @@ services:
   server:
     image: codewithcj/sparkyfitness_server:latest
     restart: unless-stopped
-    depends_on: [db]
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      SPARKY_FITNESS_LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SPARKY_FITNESS_LOG_LEVEL: ${LOG_LEVEL}
       SPARKY_FITNESS_DB_USER: ${POSTGRES_USER}
       SPARKY_FITNESS_DB_HOST: db
       SPARKY_FITNESS_DB_NAME: ${POSTGRES_DB}
@@ -29,24 +31,20 @@ services:
       SPARKY_FITNESS_DB_PORT: 5432
       SPARKY_FITNESS_SERVER_PORT: 3010
       NODE_ENV: production
-      TZ: ${TZ:-America/New_York}
-      SPARKY_FITNESS_API_ENCRYPTION_KEY: ${SPARKY_FITNESS_API_ENCRYPTION_KEY:?set-in-coolify}
-      JWT_SECRET: ${JWT_SECRET:?set-in-coolify}
-      SPARKY_FITNESS_FRONTEND_URL: ${PUBLIC_URL:-http://localhost:8096}
-      SPARKY_FITNESS_DISABLE_SIGNUP: ${SPARKY_FITNESS_DISABLE_SIGNUP:-false}
+      TZ: ${TZ}
+      SPARKY_FITNESS_API_ENCRYPTION_KEY: ${SPARKY_FITNESS_API_ENCRYPTION_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+      SPARKY_FITNESS_FRONTEND_URL: ${PUBLIC_URL}
+      SPARKY_FITNESS_DISABLE_SIGNUP: ${SPARKY_FITNESS_DISABLE_SIGNUP}
 
   web:
     image: codewithcj/sparkyfitness:latest
     restart: unless-stopped
-    depends_on: [server]
+    depends_on:
+      - server
     ports:
-      - "8096:80"   # Unused port on host → container
-    healthcheck:
-      test: ["CMD-SHELL", "nc -z 127.0.0.1 80 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 90s
+      - "8096:80"
+    # (healthcheck omitted to avoid needing nc/curl in the image)
 
 volumes:
   db:
