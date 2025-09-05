@@ -43,7 +43,7 @@ services:
     depends_on:
       - server
     ports:
-      - "8096:80"
+      - "8100:80"
 
 volumes:
   db:
