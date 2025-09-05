@@ -42,8 +42,6 @@ services:
     restart: unless-stopped
     depends_on:
       - server
-    ports:
-      - "8100:80"
 
 volumes:
   db:
